@@ -2,15 +2,14 @@ import * as fs from "fs";
 import * as path from "path";
 
 export interface RoutePath {
-    path: string;
-    target: string;
+  path: string;
+  target: string;
 }
 
 export interface RouteRepository {
-   getRoutes():RoutePath[];
-   updateRoutes(routes:RoutePath[]):void;
-   findByPath(url: string): string | null;
-
+  getRoutes(): RoutePath[];
+  updateRoutes(routes: RoutePath[]): void;
+  findByPath(url: string): string | null;
 }
 
 export function loadRoutesFromFile(filePath: string): RoutePath[] {
@@ -19,25 +18,22 @@ export function loadRoutesFromFile(filePath: string): RoutePath[] {
 }
 
 export class JSONRepository implements RouteRepository {
-    private routes: RoutePath[];
+  private routes: RoutePath[];
 
-    constructor() {
-        // Dynamically load the routes from your config file
-        const configPath = path.join(__dirname, "../config/routes.json");
-        this.routes  = loadRoutesFromFile(configPath);
-      
-    }
+  constructor() {
+    // Dynamically load the routes from your config file
+    const configPath = path.join(__dirname, "../config/routes.json");
+    this.routes = loadRoutesFromFile(configPath);
+  }
 
-    public findByPath(url: string): string | null {
-        const route = this.routes.find((r) => r.path === url);
-        return route ? route.target : null;
-    }
+  public findByPath(url: string): string | null {
+    const route = this.routes.find((r) => r.path === url);
+    return route ? route.target : null;
+  }
 
-    public getRoutes(): RoutePath[] {
-        return this.routes;
-    }
+  public getRoutes(): RoutePath[] {
+    return this.routes;
+  }
 
-    public updateRoutes(routes: RoutePath[]): void {
-        
-    }
+  public updateRoutes(routes: RoutePath[]): void {}
 }
