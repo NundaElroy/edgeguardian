@@ -1,12 +1,14 @@
 import { IncomingMessage, ServerResponse, request as httpRequest } from "http";
 import { RouteRepository } from "./repositories/route-repository";
-import { Url } from "url";
+import { RateLimiter } from "./rate_limiter/rate_limiter";
 
 class Forwarder {
   private routeRepository: RouteRepository;
+  private rateLimiter: RateLimiter;
 
-  constructor(routeRepository: RouteRepository) {
+  constructor(routeRepository: RouteRepository, rateLimiter: RateLimiter) {
     this.routeRepository = routeRepository;
+    this.rateLimiter = rateLimiter;
   }
 
   /**
@@ -20,7 +22,7 @@ class Forwarder {
    * @param req Incoming HTTP request from the client.
    * @param res HTTP response object to send data back to the client.
    */
-  public handleRequest(req: IncomingMessage, res: ServerResponse) {
+  public async handleRequest(req: IncomingMessage, res: ServerResponse) {
     const target = req.url ? this.findTarget(req.url) : null;
 
     if (!target) {
@@ -36,6 +38,14 @@ class Forwarder {
     const clientIP = existing
       ? `${existing}, ${req.socket.remoteAddress}`
       : req.socket.remoteAddress;
+
+    const allowed = await this.rateLimiter.isAllowed(clientIP as string);
+    if (!allowed) {
+      res
+        .writeHead(429, { "Retry-After": "1" })
+        .end("Too Many Requests");
+      return;
+    }
 
     const options = {
       hostname: targetUrl.hostname, // "localhost"
