@@ -1,0 +1,6 @@
+{
+  "routes": [
+    { "path": "/api", "target": "http://localhost:8000" },
+    { "path": "/static", "target": "http://localhost:8001" }
+  ]
+}
